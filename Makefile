@@ -18,9 +18,13 @@ db_migrate_down:
 	@echo "Rolling back database migrations..."
 	migrate -path db/migrations -database "postgresql://root:123456@localhost:5432/simple_bank?sslmode=disable" -verbose down
 	@echo "Database migrations rolled back."
+db_migrate_force:
+	@echo "Forcing database migration..."
+	migrate -path db/migrations -database "postgresql://root:123456@localhost:5432/simple_bank?sslmode=disable" -verbose force 20250512084024
+	@echo "Database migration forced."
 sqlc_generate:
 	@echo "Running SQLC..."
 	sqlc generate
 	@echo "SQLC completed."
 
-.PHONY: run_postgresql create_db drop_db db_migrate_up db_migrate_down sqlc_generate
+.PHONY: run_postgresql create_db drop_db db_migrate_up db_migrate_down db_migrate_force sqlc_generate
