@@ -21,13 +21,11 @@ func TestTransferTx(t *testing.T) {
 	errs := make(chan error)
 	results := make(chan TransferTxResult)
 
-	// arg := TransferTxParams{FromAccountID: account1.ID, ToAccountId: account2.ID, Amount: 10}
-
-	for i := range n {
-		txName := fmt.Sprintf("tx %d", i+1)
+	for range n {
+		// txName := fmt.Sprintf("tx %d", i+1)
 		go func() {
-			context := context.WithValue(context.Background(), txKey, txName)
-			result, err := store.TransferTx(context, TransferTxParams{
+			// context := context.WithValue(context.Background(), txKey, txName)
+			result, err := store.TransferTx(context.Background(), TransferTxParams{
 				FromAccountID: account1.ID, ToAccountId: account2.ID, Amount: amount,
 			})
 			errs <- err
@@ -51,6 +49,7 @@ func TestTransferTx(t *testing.T) {
 		require.NotZero(t, transfer.ID)
 		require.NotZero(t, transfer.CreatedAt)
 		_, err = store.GetTransfer(context.Background(), transfer.ID)
+		fmt.Println(">> transfer.ID:", transfer.ID)
 		require.NoError(t, err)
 
 		// check entry
