@@ -2,7 +2,7 @@
 INSERT INTO accounts (owner, balance, currency)
 VALUES ($1, $2, $3)
 RETURNING *;
--- name: GetAccounts :many
+-- name: ListAccount :many
 SELECT *
 FROM accounts
 LIMIT $1 OFFSET $2;
@@ -15,8 +15,8 @@ LIMIT 1;
 SELECT *
 FROM accounts
 WHERE id = $1
-LIMIT 1
-FOR UPDATE;
+LIMIT 1 FOR
+UPDATE;
 -- name: UpdateAccount :one
 UPDATE accounts
 SET balance = $1

@@ -30,5 +30,9 @@ test:
 	@echo "Running tests..."
 	go test -v ./...
 	@echo "Tests completed."
+run_server:
+	@echo "Running server..."
+	go run main.go
+	@echo "Server is running."
 
-.PHONY: run_postgresql create_db drop_db db_migrate_up db_migrate_down db_migrate_force sqlc_generate test
+.PHONY: run_postgresql create_db drop_db db_migrate_up db_migrate_down db_migrate_force sqlc_generate test run_server
