@@ -17,27 +17,21 @@ func NewStore(db *sql.DB) *Store {
 	}
 }
 
-func (s *Store) execTx(context context.Context, queryFunction func(*Queries) error) error {
+func (s *Store) execTx(context context.Context, queryFunction func(*Queries) error) (err error) {
 
 	tx, err := s.db.BeginTx(context, &sql.TxOptions{})
 	if err != nil {
-		return err
+		return
 	}
 
 	if err = queryFunction(New(tx)); err != nil {
 		if err = tx.Rollback(); err != nil {
-			return err
+			return
 		}
-		return err
+		return
 	}
 
 	return tx.Commit()
-}
-
-type TransferTxParams struct {
-	FromAccountID int64 `json:"from_account_id"`
-	ToAccountId   int64 `json:"to_account_id"`
-	Amount        int64 `json:"amount"`
 }
 
 type TransferTxResult struct {
@@ -48,18 +42,11 @@ type TransferTxResult struct {
 	ToEntry     Entry    `json:"to_entry"`
 }
 
-func (s *Store) TransferTx(context context.Context, arg TransferTxParams) (TransferTxResult, error) {
-	var result TransferTxResult
-	err := s.execTx(context, func(q *Queries) error {
-		var err error
-
-		result.Transfer, err = q.CreateTransfer(context, CreateTransferParams{
-			FromAccountID: arg.FromAccountID,
-			ToAccountID:   arg.ToAccountId,
-			Amount:        arg.Amount,
-		})
+func (s *Store) TransferTx(context context.Context, arg CreateTransferParams) (result TransferTxResult, err error) {
+	err = s.execTx(context, func(q *Queries) (err error) {
+		result.Transfer, err = q.CreateTransfer(context, arg)
 		if err != nil {
-			return err
+			return
 		}
 
 		result.FromEntry, err = q.CreateEntry(context, CreateEntryParams{
@@ -67,44 +54,41 @@ func (s *Store) TransferTx(context context.Context, arg TransferTxParams) (Trans
 			Amount:    -arg.Amount,
 		})
 		if err != nil {
-			return err
+			return
 		}
 		result.ToEntry, err = q.CreateEntry(context, CreateEntryParams{
-			AccountID: arg.ToAccountId,
+			AccountID: arg.ToAccountID,
 			Amount:    arg.Amount,
 		})
 
 		if err != nil {
-			return err
+			return
 		}
 
-		account1, err := q.GetAccountForUpdate(context, arg.FromAccountID)
-
-		if err != nil {
-			return err
+		if arg.FromAccountID < arg.ToAccountID {
+			result.FromAccount, result.ToAccount, err = addBalance(context, q, arg.FromAccountID, -arg.Amount, arg.ToAccountID, arg.Amount)
+		} else {
+			result.ToAccount, result.FromAccount, err = addBalance(context, q, arg.ToAccountID, arg.Amount, arg.FromAccountID, -arg.Amount)
 		}
-
-		result.FromAccount, err = q.UpdateAccount(context, UpdateAccountParams{
-			ID:      account1.ID,
-			Balance: account1.Balance - arg.Amount,
-		})
-
-		if err != nil {
-			return err
-		}
-
-		account2, err := q.GetAccountForUpdate(context, arg.ToAccountId)
-		if err != nil {
-			return err
-		}
-
-		result.ToAccount, err = q.UpdateAccount(context, UpdateAccountParams{
-			ID:      account2.ID,
-			Balance: account2.Balance + arg.Amount,
-		})
-
-		return err
+		return
 	})
-	return result, err
+	return
+}
 
+func addBalance(context context.Context, q *Queries, accountId1 int64, amount1 int64, accountId2 int64, amount2 int64) (account1 Account, account2 Account, err error) {
+	account1, err = q.AddAccountBalance(context, AddAccountBalanceParams{
+		ID:     accountId1,
+		Amount: amount1,
+	},
+	)
+	if err != nil {
+		return
+	}
+
+	account2, err = q.AddAccountBalance(context, AddAccountBalanceParams{
+		ID:     accountId2,
+		Amount: amount2,
+	},
+	)
+	return
 }

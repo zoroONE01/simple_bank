@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createRadomAccount(t *testing.T) Account {
+func createRandomAccount(t *testing.T) Account {
 	arg := CreateAccountParams{
 		Owner:    utils.RandomString(10),
 		Balance:  utils.RandomMoney(),
@@ -26,11 +26,11 @@ func createRadomAccount(t *testing.T) Account {
 	return account
 }
 func TestCreateAccount(t *testing.T) {
-	createRadomAccount(t)
+	createRandomAccount(t)
 }
 
 func TestGetAccount(t *testing.T) {
-	account1 := createRadomAccount(t)
+	account1 := createRandomAccount(t)
 	account2, err := testQueries.GetAccount(context.Background(), account1.ID)
 
 	require.NoError(t, err)
@@ -45,7 +45,7 @@ func TestGetAccount(t *testing.T) {
 }
 
 func TestUpdateAccount(t *testing.T) {
-	account1 := createRadomAccount(t)
+	account1 := createRandomAccount(t)
 
 	arg := UpdateAccountParams{
 		Balance: utils.RandomMoney(), ID: account1.ID}
@@ -62,7 +62,7 @@ func TestUpdateAccount(t *testing.T) {
 }
 
 func TestDeleteAccount(t *testing.T) {
-	account1 := createRadomAccount(t)
+	account1 := createRandomAccount(t)
 	err := testQueries.DeleteAccount(context.Background(), account1.ID)
 	require.NoError(t, err)
 
@@ -75,7 +75,7 @@ func TestDeleteAccount(t *testing.T) {
 func TestGetAccounts(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
-		createRadomAccount(t)
+		createRandomAccount(t)
 	}
 
 	arg := GetAccountsParams{

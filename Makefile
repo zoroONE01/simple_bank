@@ -26,5 +26,9 @@ sqlc_generate:
 	@echo "Running SQLC..."
 	sqlc generate
 	@echo "SQLC completed."
+test:
+	@echo "Running tests..."
+	go test -v ./...
+	@echo "Tests completed."
 
-.PHONY: run_postgresql create_db drop_db db_migrate_up db_migrate_down db_migrate_force sqlc_generate
+.PHONY: run_postgresql create_db drop_db db_migrate_up db_migrate_down db_migrate_force sqlc_generate test
