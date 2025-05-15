@@ -1,0 +1,7 @@
+# .mockery.yaml
+packages:
+  simple_bank/db/sqlc:
+    interfaces:
+      Querier:
+        config:
+          dir: "./db/mocks"
