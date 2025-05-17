@@ -1,7 +1,9 @@
 # .mockery.yaml
+pkgname: mockdb
 packages:
   simple_bank/db/sqlc:
     interfaces:
-      Querier:
+      Store:
         config:
-          dir: "./db/mocks"
+          dir: "./db/mockdb"
+          filename: "store_mock.go"

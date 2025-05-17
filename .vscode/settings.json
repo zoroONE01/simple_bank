@@ -10,5 +10,8 @@
             "database": "simple_bank",
             "password": "123456"
         }
+    ],
+    "cSpell.words": [
+        "mockdb"
     ]
 }

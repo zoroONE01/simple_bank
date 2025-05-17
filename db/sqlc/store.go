@@ -5,19 +5,24 @@ import (
 	"database/sql"
 )
 
-type Store struct {
+type Store interface {
+	Querier
+	TransferTx(context context.Context, arg CreateTransferParams) (result TransferTxResult, err error)
+}
+
+type SQLStore struct {
 	*Queries
 	db *sql.DB
 }
 
-func NewStore(db *sql.DB) *Store {
-	return &Store{
+func NewStore(db *sql.DB) Store {
+	return &SQLStore{
 		db:      db,
 		Queries: New(db),
 	}
 }
 
-func (s *Store) execTx(context context.Context, queryFunction func(*Queries) error) (err error) {
+func (s *SQLStore) execTx(context context.Context, queryFunction func(*Queries) error) (err error) {
 
 	tx, err := s.db.BeginTx(context, &sql.TxOptions{})
 	if err != nil {
@@ -42,7 +47,7 @@ type TransferTxResult struct {
 	ToEntry     Entry    `json:"to_entry"`
 }
 
-func (s *Store) TransferTx(context context.Context, arg CreateTransferParams) (result TransferTxResult, err error) {
+func (s *SQLStore) TransferTx(context context.Context, arg CreateTransferParams) (result TransferTxResult, err error) {
 	err = s.execTx(context, func(q *Queries) (err error) {
 		result.Transfer, err = q.CreateTransfer(context, arg)
 		if err != nil {
