@@ -1,0 +1,9 @@
+POST http://localhost:8080/transfers HTTP/1.1
+content-type: application/json
+
+{
+  "from_account_id": 31,
+  "to_account_id": 33,
+  "amount": 100,
+  "currency": "VND"
+}
